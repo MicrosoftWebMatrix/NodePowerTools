@@ -1,0 +1,11 @@
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\NodeInspector.dll
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\NodeInspector.pdb
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\Microsoft.WebMatrix.Extensibility.dll
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\Newtonsoft.Json.dll
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\Microsoft.WebMatrix.Extensibility.xml
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\Newtonsoft.Json.pdb
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\bin\Release\Newtonsoft.Json.xml
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\obj\Release\NodeInspector.csprojResolveAssemblyReference.cache
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\obj\Release\NodeInspector.g.resources
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\obj\Release\NodeInspector.dll
+C:\Users\justbe\Dropbox\Code\NodeInspector\NodeInspector\obj\Release\NodeInspector.pdb
