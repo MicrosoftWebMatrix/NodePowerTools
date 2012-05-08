@@ -81,12 +81,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if not exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Components\$(TargetName)" md "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Components\$(TargetName)"
-copy "$(TargetDir)*" "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Components\$(TargetName)" &gt; NUL</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)" md "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)"
+copy "$(TargetDir)*" "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)" &gt; NUL</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>if exist "$(TEMP)\WebMatrix.crash.info" del "$(TEMP)\WebMatrix.crash.info"
-if exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Components\DisabledExtensions" del "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Components\DisabledExtensions"</PreBuildEvent>
+if exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\DisabledExtensions" del "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\DisabledExtensions"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

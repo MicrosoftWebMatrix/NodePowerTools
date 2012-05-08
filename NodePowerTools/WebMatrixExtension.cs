@@ -8,14 +8,15 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using System.Windows.Media;
 using System.Windows;
+using Microsoft.WebMatrix.Extensibility.Editor;
 
 namespace NodePowerTools
 {
     /// <summary>
     /// A sample WebMatrix extension.
     /// </summary>
-    [Export(typeof(ExtensionBase))]
-    public class WebMatrixExtension : ExtensionBase
+    [Export(typeof(Extension))]
+    public class WebMatrixExtension : Extension
     {
 
         //--------------------------------------------------------------------------
@@ -138,7 +139,7 @@ namespace NodePowerTools
         /// Called when the WebMatrixHost property changes.
         /// </summary>
         /// <param name="Host">Host used to communicate with WebMatrix</param>
-        protected override void Initialize(IWebMatrixHost host)
+        protected override void Initialize(IWebMatrixHost host, ExtensionInitData data)
         {
             // Get new values
             _host = host;            
@@ -150,7 +151,7 @@ namespace NodePowerTools
                 // Add a simple button to the Ribbon
                 _ribbonGroup = new RibbonGroup(
                         "Node",
-                        new IRibbonItem[]
+                        new RibbonItem[]
                         {
                             new RibbonButton(
                                 "Debug",
@@ -159,7 +160,7 @@ namespace NodePowerTools
                                 _starImageSmall,
                                 _starImageLarge)
                         });
-                this.RibbonItemsCollection.Add(_ribbonGroup);
+                data.RibbonItems.Add(_ribbonGroup);
                 _editorTaskPanel.PageChanged += InitializeLogTab;
 
 

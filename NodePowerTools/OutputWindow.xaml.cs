@@ -60,7 +60,7 @@ namespace NodePowerTools
         /// <param name="siteFileWatcherService"></param>
         public void Initialize(string filePath, ISiteFileWatcherService siteFileWatcherService)
         {
-            _filePath = filePath;
+            _filePath = Path.GetFullPath(filePath);
             _siteFileWatcherService = siteFileWatcherService;
                 
             if (File.Exists(_filePath))            
