@@ -11,3 +11,4 @@ C:\Users\justbe\Dropbox\Code\NodePowerTools\NodePowerTools\obj\Debug\NodePowerTo
 C:\Users\justbe\Dropbox\Code\NodePowerTools\NodePowerTools\obj\Debug\NodePowerTools.g.resources
 C:\Users\justbe\Dropbox\Code\NodePowerTools\NodePowerTools\obj\Debug\NodePowerTools.dll
 C:\Users\justbe\Dropbox\Code\NodePowerTools\NodePowerTools\obj\Debug\NodePowerTools.pdb
+C:\Users\justbe\Dropbox\Code\NodePowerTools\NodePowerTools\obj\Debug\NodePowerTools.csprojResolveAssemblyReference.cache

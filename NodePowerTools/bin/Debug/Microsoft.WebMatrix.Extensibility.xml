@@ -2583,18 +2583,6 @@
             <param name="id">HierarchyId instance.</param>
             <returns>ISiteItem instance.</returns>
         </member>
-        <member name="M:Microsoft.WebMatrix.Extensibility.IWebMatrixHost.AddRibbonItems(System.Collections.Generic.IEnumerable{Microsoft.WebMatrix.Extensibility.RibbonItem})">
-            <summary>
-            Adds a sequence of Ribbon items to the Ribbon.
-            </summary>
-            <param name="ribbonItems">Sequence of RibbonItems.</param>
-        </member>
-        <member name="M:Microsoft.WebMatrix.Extensibility.IWebMatrixHost.AddDashboardItems(System.Collections.Generic.IEnumerable{Microsoft.WebMatrix.Extensibility.DashboardItem})">
-            <summary>
-            Adds a sequence of dashboard items to the dashboard.
-            </summary>
-            <param name="dashboardItems">Sequence of IDashboardItems.</param>
-        </member>
         <member name="M:Microsoft.WebMatrix.Extensibility.IWebMatrixHost.ApplyPathProtection(System.Collections.Generic.IEnumerable{Microsoft.WebMatrix.Extensibility.IProtectPathInfo})">
             <summary>
             Applies a set of IProtectPathInfo rules to the site's files.

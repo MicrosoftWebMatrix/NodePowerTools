@@ -1,11 +1,10 @@
 ﻿using System;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using Microsoft.WebMatrix.Extensibility;
+using Microsoft.WebMatrix.Extensibility.Editor;
 
 namespace NodePowerTools
 {
@@ -25,6 +24,10 @@ namespace NodePowerTools
         private string _filePath;
         private StreamReader _fileStreamReader;
         private ISiteFileWatcherService _siteFileWatcherService;
+        private long _logLength;
+
+        
+
 
         #endregion
 
@@ -41,8 +44,7 @@ namespace NodePowerTools
         /// </summary>
         public OutputWindow()
         {
-            InitializeComponent();
-            
+            InitializeComponent();            
         }
         #endregion
 
@@ -54,11 +56,11 @@ namespace NodePowerTools
 
         #region Initialize
         /// <summary>
-        /// 
+        /// monitor the log file for changes, set up the initial read
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="siteFileWatcherService"></param>
-        public void Initialize(string filePath, ISiteFileWatcherService siteFileWatcherService)
+        public void Initialize(string filePath, ISiteFileWatcherService siteFileWatcherService, ITheme theme)
         {
             _filePath = Path.GetFullPath(filePath);
             _siteFileWatcherService = siteFileWatcherService;
@@ -67,6 +69,9 @@ namespace NodePowerTools
                 this.PerformInitialRead();
             
             _siteFileWatcherService.RegisterForSiteNotifications(WatcherChangeTypes.All, new FileSystemEventHandler(FileSystemEvent), null);
+
+            outy.Foreground = theme.DefaultFormat.ForeColor;
+            outy.Background = theme.DefaultFormat.BackColor;                
         }
         #endregion
 
@@ -77,6 +82,7 @@ namespace NodePowerTools
         private void PerformInitialRead()
         {
             _fileStreamReader = new StreamReader(new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.UTF8);
+            _logLength = _fileStreamReader.BaseStream.Length;
             this.WriteToLog(_fileStreamReader.ReadToEnd());
         }
         #endregion
@@ -119,11 +125,21 @@ namespace NodePowerTools
                 }
                 else if (e.ChangeType == WatcherChangeTypes.Changed)
                 {
-                    var line = "";
-                    while ((line = _fileStreamReader.ReadLine()) != null)
+                    if (_fileStreamReader.BaseStream.Length < _logLength)
                     {
-                        this.WriteToLog(line);
-                    }                    
+                        // if the log has decreased in size, it got reset.  
+                        this.PerformInitialRead();
+                    }
+                    else
+                    {
+                        // there was an additive change to the log
+                        _logLength = _fileStreamReader.BaseStream.Length;
+                        var line = "";
+                        while ((line = _fileStreamReader.ReadLine()) != null)
+                        {
+                            this.WriteToLog(line);
+                        }
+                    }
                 }
             }            
         }
