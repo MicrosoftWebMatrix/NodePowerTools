@@ -7,7 +7,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <ScrollViewer Name="scrollViewer">
-            <TextBlock Name="outy" Background="Black" Foreground="LimeGreen" FontFamily="Consolas" Text=""></TextBlock>
+            <TextBlock Name="outy" Background="Black" Foreground="White" FontFamily="Consolas" Text=""></TextBlock>
         </ScrollViewer>
     </Grid>
 </UserControl>

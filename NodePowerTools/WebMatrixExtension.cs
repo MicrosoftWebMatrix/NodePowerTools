@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows;
 using Microsoft.WebMatrix.Extensibility.Editor;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace NodePowerTools
 {
@@ -59,25 +60,23 @@ namespace NodePowerTools
         protected IWebMatrixHost _host;
 
 
-        private static readonly Guid _outputTaskPanelId = new Guid("2f09fa84-888f-47c9-b333-b3501a0055b4");
-        private IEditorTaskPanelService _editorTaskPanel;
-        private ISiteFileWatcherService _siteFileWatcher;
-        private OutputWindow _outputWindow;
-        private string _mainScriptPath;
-        
-        [Import(ThemeKeys.DefaultTheme, typeof(ITheme))]
-        private ITheme DefaultTheme { get; set; }
-
-
-
-        [Import(typeof(IEditorTaskPanelService))]
-        private IEditorTaskPanelService EditorTaskPanelService
-        {
-            get
-            {
-                return _editorTaskPanel;
-            }
-            set
+        private static readonly Guid _outputTaskPanelId = new Guid("2f09fa84-888f-47c9-b333-b3501a0055b4");        
+        private IEditorTaskPanelService _editorTaskPanel;                                                          
+        private ISiteFileWatcherService _siteFileWatcher;                                                          
+        private OutputWindow _outputWindow;                                                                        
+        private string _mainScriptPath;                                                                            
+                                                                                                                   
+        [Import(ThemeKeys.DefaultTheme, typeof(ITheme))]                                                           
+        private ITheme DefaultTheme { get; set; }                                                                                                                                                                                                                                                                
+                                                                                                                   
+        [Import(typeof(IEditorTaskPanelService))]                                                                  
+        private IEditorTaskPanelService EditorTaskPanelService                                                     
+        {                                                                                                          
+            get                                                                                                    
+            {                                                                                                      
+                return _editorTaskPanel;                                                                           
+            }                                                                                                      
+            set                                                                                                    
             {
                 _editorTaskPanel = value;
             }
@@ -121,9 +120,20 @@ namespace NodePowerTools
                 }
                 else
                 {
-                    _mainScriptPath = this.GetMainFileName();
-                    var nodeInspectorUrl = string.Format("{0}/{1}/debug", _host.WebSite.Uri.ToString(), _mainScriptPath);
-                    Process.Start("chrome", nodeInspectorUrl);
+                    try
+                    {
+                        _mainScriptPath = this.GetMainFileName();
+                        var nodeInspectorUrl = string.Format("{0}/{1}/debug", _host.WebSite.Uri.ToString(), _mainScriptPath);
+                        Process.Start("chrome", nodeInspectorUrl);
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        _host.ShowNotification("Chrome is not installed!  Node Inspector requires Chrome.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _host.ShowExceptionMessage("Node Power Tools", "There was a problem launching chrome. Are you sure it's installed?", ex);
+                    }
                     //Process.Start("chrome", _host.WebSite.Uri.ToString());
                 }
             });
@@ -194,7 +204,7 @@ namespace NodePowerTools
             {
                 _mainScriptPath = this.GetMainFileName();
                 _outputWindow = new OutputWindow();
-                _outputWindow.Initialize(Path.Combine(_host.WebSite.Path, _mainScriptPath + ".logs", "0.txt"), _siteFileWatcher, DefaultTheme);
+                _outputWindow.Initialize(Path.Combine(_host.WebSite.Path, "iisnode"), _siteFileWatcher, DefaultTheme);
                 _editorTaskPanel.AddTaskTab(_outputTaskPanelId, new TaskTabItemDescriptor(null, "Output", _outputWindow, Brushes.DarkOliveGreen));
             }
             else
@@ -282,16 +292,29 @@ namespace NodePowerTools
         {
             // older installs don't have the clients reg, so check uninstall
             var key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-            foreach (string name in key.GetSubKeyNames())
-                if (name == "Google Chrome") return true;
+            if (key != null)
+            {
+                foreach (string name in key.GetSubKeyNames())
+                {
+                    if (name == "Google Chrome") return true;
+                }
+            }
 
             // try it this way
             key = Registry.CurrentUser.OpenSubKey(@"Software\Google\Update\Clients");
             if (key == null) return false;
 
+            var subkeys = key.GetSubKeyNames();
+            if (subkeys == null) return false;
+
             foreach (string name in key.GetSubKeyNames())
+            {
                 using (RegistryKey tkey = key.OpenSubKey(name))
-                    if (tkey.GetValue("name").ToString() == "Google Chrome") return true;
+                {
+                    if (tkey != null && tkey.GetValue("name") != null && tkey.GetValue("name").ToString() == "Google Chrome") 
+                        return true;
+                }
+            }
 
             return false;
         }

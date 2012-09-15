@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 using System.Windows.Controls;
 using Microsoft.WebMatrix.Extensibility;
 using Microsoft.WebMatrix.Extensibility.Editor;
@@ -21,13 +23,9 @@ namespace NodePowerTools
 
         #region Variables
 
-        private string _filePath;
-        private StreamReader _fileStreamReader;
+        private DirectoryInfo _logDirectory;
         private ISiteFileWatcherService _siteFileWatcherService;
-        private long _logLength;
-
-        
-
+        private List<ConsoleLog> _readers = new List<ConsoleLog>();
 
         #endregion
 
@@ -43,8 +41,8 @@ namespace NodePowerTools
         /// 
         /// </summary>
         public OutputWindow()
-        {
-            InitializeComponent();            
+        {            
+            InitializeComponent();
         }
         #endregion
 
@@ -60,18 +58,15 @@ namespace NodePowerTools
         /// </summary>
         /// <param name="filePath"></param>
         /// <param name="siteFileWatcherService"></param>
-        public void Initialize(string filePath, ISiteFileWatcherService siteFileWatcherService, ITheme theme)
+        public void Initialize(string logDirectory, ISiteFileWatcherService siteFileWatcherService, ITheme theme)
         {
-            _filePath = Path.GetFullPath(filePath);
+            _logDirectory = new DirectoryInfo(logDirectory);
             _siteFileWatcherService = siteFileWatcherService;
-                
-            if (File.Exists(_filePath))            
-                this.PerformInitialRead();
-            
-            _siteFileWatcherService.RegisterForSiteNotifications(WatcherChangeTypes.All, new FileSystemEventHandler(FileSystemEvent), null);
+                                    
+            _siteFileWatcherService.RegisterForSiteNotifications(WatcherChangeTypes.Created | WatcherChangeTypes.Changed, new FileSystemEventHandler(FileSystemEvent), null);
 
-            outy.Foreground = theme.DefaultFormat.ForeColor;
-            outy.Background = theme.DefaultFormat.BackColor;                
+            //outy.Foreground = theme.DefaultFormat.ForeColor;
+            //outy.Background = theme.DefaultFormat.BackColor;
         }
         #endregion
 
@@ -79,11 +74,11 @@ namespace NodePowerTools
         /// <summary>
         /// 
         /// </summary>
-        private void PerformInitialRead()
-        {
-            _fileStreamReader = new StreamReader(new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.UTF8);
-            _logLength = _fileStreamReader.BaseStream.Length;
-            this.WriteToLog(_fileStreamReader.ReadToEnd());
+        private void PerformInitialRead(string path)
+        {            
+            var fileStreamReader = new StreamReader(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), Encoding.UTF8);
+            WriteToLog(fileStreamReader.ReadToEnd());
+            _readers.Add(new ConsoleLog() { FileStream=fileStreamReader, Path=path });
         }
         #endregion
 
@@ -101,8 +96,7 @@ namespace NodePowerTools
             }));
         }
         #endregion
-
-
+        
         //--------------------------------------------------------------------------
         //
         //	Event Handlers
@@ -117,32 +111,46 @@ namespace NodePowerTools
         /// <param name="e"></param>
         private void FileSystemEvent(object sender, FileSystemEventArgs e)
         {
-            if (e.FullPath.ToLower() == _filePath.ToLower())
-            {
+            // make sure the change was in the iisnode/ path
+            if (Path.GetDirectoryName(e.FullPath) == _logDirectory.FullName && e.FullPath.EndsWith(".txt"))
+            {                                
                 if (e.ChangeType == WatcherChangeTypes.Created)
                 {
-                    this.PerformInitialRead();             
+                    // looks like a new log got dropped - read that now                    
+                    this.PerformInitialRead(e.FullPath);
                 }
                 else if (e.ChangeType == WatcherChangeTypes.Changed)
                 {
-                    if (_fileStreamReader.BaseStream.Length < _logLength)
+                    // check if we have an open stream for this log
+                    var readers = _readers.Where(x => x.Path.ToLower() == e.FullPath.ToLower());
+                    if (readers.Count() == 0)
                     {
-                        // if the log has decreased in size, it got reset.  
-                        this.PerformInitialRead();
+                        this.PerformInitialRead(e.FullPath);
                     }
                     else
                     {
-                        // there was an additive change to the log
-                        _logLength = _fileStreamReader.BaseStream.Length;
-                        var line = "";
-                        while ((line = _fileStreamReader.ReadLine()) != null)
+                        // something strange happened - re-read the file
+                        var reader = readers.First();
+                        if (reader.FileStream.BaseStream.Length < reader.LogLegnth)
                         {
-                            this.WriteToLog(line);
+                            // if the log has decreased in size, it got reset.  
+                            this.PerformInitialRead(reader.Path);
+                        }
+                        else
+                        {
+                            // there was an additive change to the log
+                            reader.LogLegnth = reader.FileStream.BaseStream.Length;
+                            var line = "";
+                            while ((line = reader.FileStream.ReadLine()) != null)
+                            {
+                                this.WriteToLog(line);
+                            }
                         }
                     }
                 }
-            }            
+            }
+           
         }
-        #endregion       
+        #endregion
     }
 }

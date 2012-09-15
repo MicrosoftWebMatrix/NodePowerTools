@@ -52,6 +52,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConsoleLog.cs" />
     <Compile Include="DelegateCommand.cs" />
     <Compile Include="OutputWindow.xaml.cs">
       <DependentUpon>OutputWindow.xaml</DependentUpon>
@@ -80,14 +81,17 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="interceptor.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if not exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)" md "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)"
-copy "$(TargetDir)*" "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\$(TargetName)" &gt; NUL</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20\$(TargetName)" md "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20\$(TargetName)"
+copy "$(TargetDir)*" "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20\$(TargetName)" &gt; NUL</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>if exist "$(TEMP)\WebMatrix.crash.info" del "$(TEMP)\WebMatrix.crash.info"
-if exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\DisabledExtensions" del "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20RC\DisabledExtensions"</PreBuildEvent>
+if exist "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20\DisabledExtensions" del "$(USERPROFILE)\AppData\Local\Microsoft\WebMatrix\Extensions\20\DisabledExtensions"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
