@@ -11,6 +11,8 @@ using System.Windows;
 using Microsoft.WebMatrix.Extensibility.Editor;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Security.Principal;
+using System.Reflection;
 
 namespace NodePowerTools
 {
@@ -19,7 +21,7 @@ namespace NodePowerTools
     /// </summary>
     [Export(typeof(Extension))]
     public class WebMatrixExtension : Extension
-    {       
+    {
 
         //--------------------------------------------------------------------------
         //
@@ -60,23 +62,23 @@ namespace NodePowerTools
         protected IWebMatrixHost _host;
 
 
-        private static readonly Guid _outputTaskPanelId = new Guid("2f09fa84-888f-47c9-b333-b3501a0055b4");        
-        private IEditorTaskPanelService _editorTaskPanel;                                                          
-        private ISiteFileWatcherService _siteFileWatcher;                                                          
-        private OutputWindow _outputWindow;                                                                        
-        private string _mainScriptPath;                                                                            
-                                                                                                                   
-        [Import(ThemeKeys.DefaultTheme, typeof(ITheme))]                                                           
-        private ITheme DefaultTheme { get; set; }                                                                                                                                                                                                                                                                
-                                                                                                                   
-        [Import(typeof(IEditorTaskPanelService))]                                                                  
-        private IEditorTaskPanelService EditorTaskPanelService                                                     
-        {                                                                                                          
-            get                                                                                                    
-            {                                                                                                      
-                return _editorTaskPanel;                                                                           
-            }                                                                                                      
-            set                                                                                                    
+        private static readonly Guid _outputTaskPanelId = new Guid("2f09fa84-888f-47c9-b333-b3501a0055b4");
+        private IEditorTaskPanelService _editorTaskPanel;
+        private ISiteFileWatcherService _siteFileWatcher;
+        private OutputWindow _outputWindow;
+        private string _mainScriptPath;
+
+        [Import(ThemeKeys.DefaultTheme, typeof(ITheme))]
+        private ITheme DefaultTheme { get; set; }
+
+        [Import(typeof(IEditorTaskPanelService))]
+        private IEditorTaskPanelService EditorTaskPanelService
+        {
+            get
+            {
+                return _editorTaskPanel;
+            }
+            set
             {
                 _editorTaskPanel = value;
             }
@@ -113,29 +115,21 @@ namespace NodePowerTools
         {
             _launchDebuggerCommand = new DelegateCommand(p =>
             {
-                // check if google chrome is installed                
-                if (!IsChromeInstalled())
+                try
+                {
+                    _mainScriptPath = this.GetMainFileName();
+                    var nodeInspectorUrl = string.Format("{0}/{1}/debug", _host.WebSite.Uri.ToString(), _mainScriptPath);
+                    Process.Start("chrome", nodeInspectorUrl);
+                }
+                catch (Win32Exception ex)
                 {
                     _host.ShowNotification("Chrome is not installed!  Node Inspector requires Chrome.");
                 }
-                else
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        _mainScriptPath = this.GetMainFileName();
-                        var nodeInspectorUrl = string.Format("{0}/{1}/debug", _host.WebSite.Uri.ToString(), _mainScriptPath);
-                        Process.Start("chrome", nodeInspectorUrl);
-                    }
-                    catch (Win32Exception ex)
-                    {
-                        _host.ShowNotification("Chrome is not installed!  Node Inspector requires Chrome.");
-                    }
-                    catch (Exception ex)
-                    {
-                        _host.ShowExceptionMessage("Node Power Tools", "There was a problem launching chrome. Are you sure it's installed?", ex);
-                    }
-                    //Process.Start("chrome", _host.WebSite.Uri.ToString());
+                    _host.ShowExceptionMessage("Node Power Tools", "There was a problem launching chrome. Are you sure it's installed?", ex);
                 }
+                //Process.Start("chrome", _host.WebSite.Uri.ToString());                
             });
         }
         #endregion
@@ -187,7 +181,10 @@ namespace NodePowerTools
                     _ribbonGroup.IsVisible = _host.Workspace is IEditorWorkspace && _isNodeSite;
                     InitializeLogTab(this, EventArgs.Empty);
                 }
-            }            
+
+                InstallNodeInspector();
+
+            }
         }
         #endregion
 
@@ -273,7 +270,7 @@ namespace NodePowerTools
                 e.AddMenuItem(menuItem);
             }
         }
-        
+
         #endregion
 
         //--------------------------------------------------------------------------
@@ -311,7 +308,7 @@ namespace NodePowerTools
             {
                 using (RegistryKey tkey = key.OpenSubKey(name))
                 {
-                    if (tkey != null && tkey.GetValue("name") != null && tkey.GetValue("name").ToString() == "Google Chrome") 
+                    if (tkey != null && tkey.GetValue("name") != null && tkey.GetValue("name").ToString() == "Google Chrome")
                         return true;
                 }
             }
@@ -402,6 +399,27 @@ namespace NodePowerTools
                 };
                 Process.Start(info);
             }
+        }
+
+        #endregion
+
+        #region InstallNodeInspector
+        /// <summary>
+        /// launch NodeElevator process to elevate up and copy iisnode-inspector to the right path
+        /// </summary>
+        protected void InstallNodeInspector()
+        {
+            var pathToExe = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "NodeElevator.exe");
+
+            var psi = new ProcessStartInfo()
+            {
+                FileName = pathToExe,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden
+            };
+
+            var process = Process.Start(psi);
+            process.WaitForExit();
         }
 
         #endregion
