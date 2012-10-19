@@ -117,6 +117,7 @@ namespace NodePowerTools
             {
                 try
                 {
+					InstallNodeInspector();
                     _mainScriptPath = this.GetMainFileName();
                     var nodeInspectorUrl = string.Format("{0}/{1}/debug", _host.WebSite.Uri.ToString(), _mainScriptPath);
                     Process.Start("chrome", nodeInspectorUrl);
@@ -409,17 +410,31 @@ namespace NodePowerTools
         /// </summary>
         protected void InstallNodeInspector()
         {
-            var pathToExe = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "NodeElevator.exe");
-
-            var psi = new ProcessStartInfo()
+            // check if iisnode-inspector.dll is installed in iisnode-dev
+            var programfiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            var path = programfiles + @"\iisnode-dev\release\x86\iisnode-inspector.dll";
+            if (!File.Exists(path))
             {
-                FileName = pathToExe,
-                CreateNoWindow = true,
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
+                // if the file isn't there, use NodeElevator to run as admin and copy into program files
+                var pathToExe = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "NodeElevator.exe");
 
-            var process = Process.Start(psi);
-            process.WaitForExit();
+                var psi = new ProcessStartInfo()
+                {
+                    FileName = pathToExe,
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };                
+
+                var process = Process.Start(psi);
+                process.WaitForExit();
+                
+                if (process.ExitCode != 0)
+                {
+                    MessageBox.Show(string.Format("There was an error copying iisnode-inspector.dll into {0}.  The exit code was {1}.", path, process.ExitCode));
+                }
+            }            
         }
 
         #endregion

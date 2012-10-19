@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.IO;
+using System.Reflection;
 
 namespace PrivilegedExe
 {
@@ -16,8 +17,12 @@ namespace PrivilegedExe
                 var programfiles = Environment.GetEnvironmentVariable("ProgramFiles(x86)");
                 var path = programfiles + @"\iisnode-dev\release\x86\iisnode-inspector.dll";
                 if (!File.Exists(path))
-                {                    
-                    File.Copy("iisnode-inspector.dll", programfiles + @"\iisnode-dev\release\x86\iisnode-inspector.dll");                    
+                {
+                    var originPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "iisnode-inspector.dll");
+                    if (Directory.Exists(programfiles + @"\iisnode-dev\release\x86\"))
+                    {
+                        File.Copy(originPath, programfiles + @"\iisnode-dev\release\x86\iisnode-inspector.dll");
+                    }
                 }
 
                 retVal = 0;
@@ -33,6 +38,7 @@ namespace PrivilegedExe
             catch (Exception ex)
             {
                 retVal = 3;
+                throw;
             }
             Console.WriteLine("NodeElevator completed with return code: {0}", retVal.ToString());
 
